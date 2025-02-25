@@ -103,6 +103,7 @@ def getCounter(database: str) -> DataFrame:
     """
     Подсчёт кол-ва записей каждой таблицы определённой БД.
     """
+    getDatabases(database)
     database_composition: list = getTables(database)
     for table in database_composition:
         globals()[table[0]] = table[0].split(sep='_')
@@ -176,12 +177,11 @@ def getLimited(database: str) -> None:
     with pd.ExcelWriter(f"{database}.xlsx", engine='xlsxwriter') as writer:
         for table in getTables(database):
             path: list = getPath(database, table)
-            last_file: int = -1
-            parquet_file: any = path[last_file].decode()
-            path_to_parquet_file: int = -1
+            index_file: int = index_path: int = -1
+            parquet_file: any = path[index_file].decode()
             path_string: str = (
                 parquet_file.split(sep=' ')
-            )[path_to_parquet_file]
+            )[index_path]
             dataframe: DataFrame = spark.read.parquet(path_string)
             string_columns: list = ([F.col(column).cast(T.StringType())
                                      for column in dataframe.columns])
