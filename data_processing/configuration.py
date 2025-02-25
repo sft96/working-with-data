@@ -179,9 +179,7 @@ def getLimited(database: str) -> None:
             path: list = getPath(database, table)
             index_file: int = index_path: int = -1
             parquet_file: any = path[index_file].decode()
-            path_string: str = (
-                parquet_file.split(sep=' ')
-            )[index_path]
+            path_string: str = parquet_file.split(sep=' ')[index_path]
             dataframe: DataFrame = spark.read.parquet(path_string)
             string_columns: list = ([F.col(column).cast(T.StringType())
                                      for column in dataframe.columns])
