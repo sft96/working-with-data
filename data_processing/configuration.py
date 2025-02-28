@@ -79,7 +79,7 @@ spark = (
 def getDatabases(database: str) -> list:
     """
     Получить список доступных БД из Hive.
-    Проверить наличие переданного наименования БД в списоке всех БД.
+    Проверить наличие переданного наименования БД в списке всех БД.
     """
     information_of_databases: list = spark.catalog.listDataBases()
     list_of_databases_name: list = []
