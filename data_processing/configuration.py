@@ -152,13 +152,15 @@ def createSchema(schema_dict: dict, dataframe: DataFrame) -> DataFrame:
     Определяем новую схему для DataFrame.
     Дополняет метаданные (комментариями) к таблице в Hive.
     """
-    schema_with_metadata = []
+    schema_with_metadata: list = []
     for name, comment in schema_dict.items():
-        point = T.StructField(f"{name}", T.StringType(), True,
+        point: any = T.StructField(f"{name}", T.StringType(), True,
                               {'comment': f'{comment}'})
         schema_with_metadata.append(point)
-    new_dataframe = spark.createDataFrame(dataframe.rdd,
-                                          T.StructType(schema_with_metadata))
+    new_dataframe: DataFrame = spark.createDataFrame(
+        dataframe.rdd,
+        T.StructType(schema_with_metadata)
+    )
     return new_dataframe
 
 
