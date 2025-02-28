@@ -142,12 +142,9 @@ def getExcel(writer: object, table: str, dataframe: DataFrame) -> None:
     path_of_the_name: list = table[0].split(sep='_')
     worksheet_name: str = path_of_the_name[-1]
     sheet_length: int = 31
-    dataframe.toPandas().to_excel(
-        writer,
-        sheet_name=f"{worksheet_name[sheet_length]}",
-        index=False,
-        encoding='utf-8'
-    )
+    dataframe.toPandas(
+    ).to_excel(writer, sheet_name=f"{worksheet_name[sheet_length]}",
+               index=False, encoding='utf-8')
 
 
 def createSchema(schema_dict: dict, dataframe: DataFrame) -> DataFrame:
