@@ -110,8 +110,8 @@ def getCounter(database: str) -> DataFrame:
         globals()[table[0]] = table[0].split(sep='_')
         counter: any = spark.sql(
             f"""
-            SELECT (*) AS {globals()[table[0]][-1]} 
-            FROM {database}.{table}
+            select (*) as {globals()[table[0]][-1]} 
+            from {database}.{table}
             """
         ).collect()
         print(counter)
@@ -123,7 +123,7 @@ def getPath(database: str, table: str) -> list:
     Получить список путей до всех parquet-файлов нужной таблицы в HDFS.
     """
     path_to_database: any = (
-        spark.sql(f"DESCRIBE FORMATTED {database}.{table}")
+        spark.sql(f"describe formatted {database}.{table}")
         .filter(F.col('col_name') == 'Location')
         .select('data_type').collect()[0]
     )
@@ -148,6 +148,21 @@ def getExcel(writer: object, table: str, dataframe: DataFrame) -> None:
         index=False,
         encoding='utf-8'
     )
+
+
+def createSchema(schema_dict: dict, dataframe: DataFrame) -> DataFrame:
+    """
+    Определяем новую схему для DataFrame.
+    Дополняет метаданные (комментариями) к таблице в Hive.
+    """
+    schema_with_metadata = []
+    for name, comment in schema_dict.items():
+        point = T.StructField(f"{name}", T.StringType(), True,
+                              {'comment': f'{comment}'})
+        schema_with_metadata.append(point)
+    new_dataframe = spark.createDataFrame(dataframe.rdd,
+                                          T.StructType(schema_with_metadata))
+    return new_dataframe
 
 
 def getLimited(database: str) -> None:
