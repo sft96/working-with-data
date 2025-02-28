@@ -100,7 +100,7 @@ def getTables(database: str) -> list:
     return list_of_tables_name
 
 
-def getCounter(database: str) -> DataFrame:
+def getCounter(database: str) -> str:
     """
     Подсчёт кол-ва записей каждой таблицы определённой БД.
     """
