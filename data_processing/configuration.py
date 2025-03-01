@@ -97,23 +97,6 @@ def getTables(database: str) -> list:
     return list_of_tables_name
 
 
-def getCounter(database: str) -> str:
-    """
-    Подсчёт кол-ва записей каждой таблицы определённой БД.
-    """
-    getDatabases(database)
-    database_composition: list = getTables(database)
-    for table in database_composition:
-        globals()[table[0]] = table[0].split(sep='_')
-        counter: any = spark.sql(
-            f"""
-            select (*) as {globals()[table[0]][-1]} 
-            from {database}.{table}
-            """
-        ).collect()
-        print(counter)
-
-
 def getPath(database: str, table: str) -> list:
     """
     Найти путь до директории с файлами таблиц.
@@ -142,23 +125,6 @@ def getExcel(writer: object, table: str, dataframe: DataFrame) -> None:
     dataframe.toPandas(
     ).to_excel(writer, sheet_name=f"{worksheet_name[sheet_length]}",
                index=False, encoding='utf-8')
-
-
-def createSchema(schema_dict: dict, dataframe: DataFrame) -> DataFrame:
-    """
-    Определяем новую схему для DataFrame.
-    Дополняет метаданные (комментариями) к таблице в Hive.
-    """
-    schema_with_metadata: list = []
-    for name, comment in schema_dict.items():
-        point: any = T.StructField(f"{name}", T.StringType(), True,
-                              {'comment': f'{comment}'})
-        schema_with_metadata.append(point)
-    new_dataframe: DataFrame = spark.createDataFrame(
-        dataframe.rdd,
-        T.StructType(schema_with_metadata)
-    )
-    return new_dataframe
 
 
 def getLimited(database: str) -> None:
@@ -200,6 +166,40 @@ def getLimited(database: str) -> None:
                 dataframe.select(*string_columns).limit(number_of_rows)
             )
             table_entry: None = getExcel(writer, table, changed_dataframe)
+
+
+def countRecords(database: str) -> str:
+    """
+    Подсчёт кол-ва записей каждой таблицы определённой БД.
+    """
+    getDatabases(database)
+    database_composition: list = getTables(database)
+    for table in database_composition:
+        globals()[table[0]] = table[0].split(sep='_')
+        counter: any = spark.sql(
+            f"""
+            select (*) as {globals()[table[0]][-1]} 
+            from {database}.{table}
+            """
+        ).collect()
+        print(counter)
+
+
+def createSchema(schema_dict: dict, dataframe: DataFrame) -> DataFrame:
+    """
+    Определяем новую схему для DataFrame.
+    Дополняет метаданные (комментариями) к таблице в Hive.
+    """
+    schema_with_metadata: list = []
+    for name, comment in schema_dict.items():
+        point: any = T.StructField(f"{name}", T.StringType(), True,
+                              {'comment': f'{comment}'})
+        schema_with_metadata.append(point)
+    new_dataframe: DataFrame = spark.createDataFrame(
+        dataframe.rdd,
+        T.StructType(schema_with_metadata)
+    )
+    return new_dataframe
 
 
 if __name__ == '__main__':
