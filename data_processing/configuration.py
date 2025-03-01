@@ -127,7 +127,7 @@ def getExcel(writer: object, table: str, dataframe: DataFrame) -> None:
                index=False, encoding='utf-8')
 
 
-def getLimited(database: str) -> None:
+def getSample(database: str) -> None:
     """
     Выгружаем по 100 строк из каждой таблицы БД
     и записываем в excel-файл для анализа.
