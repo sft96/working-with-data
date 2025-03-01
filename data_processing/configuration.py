@@ -102,7 +102,7 @@ def getPath(database: str, table: str) -> list:
     Найти путь до директории с файлами таблиц.
     Получить список путей до всех parquet-файлов нужной таблицы в HDFS.
     """
-    path_to_database: any = (
+    path_to_database: str = (
         spark.sql(f"describe formatted {database}.{table}")
         .filter(F.col('col_name') == 'Location')
         .select('data_type').collect()[0]
