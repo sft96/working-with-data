@@ -141,7 +141,6 @@ def getSample(database: str) -> None:
     --- Устанавливаем константу длины наименования листа Excel для
         выполнения условия: длина <= 31
     """
-    getDatabases(database)
     with pd.ExcelWriter(f"{database}.xlsx", engine='xlsxwriter') as writer:
         for table in getTables(database):
             path: list[bytes] = getPath(database, table)
@@ -162,7 +161,6 @@ def countRecords(database: str) -> str:
     """
     Подсчёт кол-ва записей каждой таблицы определённой БД.
     """
-    getDatabases(database)
     database_composition: list = getTables(database)
     for table in database_composition:
         globals()[table[0]] = table[0].split(sep='_')
