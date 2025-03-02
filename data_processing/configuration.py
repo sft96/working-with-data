@@ -150,7 +150,8 @@ def getSample(database: str) -> None:
             dataframe: DataFrame = spark.read.parquet(path_string)
             string_columns: list = ([F.col(column).cast(T.StringType())
                                      for column in dataframe.columns])
-            number_of_rows: int = 100
+            number_of_rows: int = 100 # При желании можно увеличить кол-во
+                                      # записей для сэмпла данных
             changed_dataframe: DataFrame = (
                 dataframe.select(*string_columns).limit(number_of_rows)
             )
