@@ -28,8 +28,8 @@ identificatation_inn as (
     where rn = 1
 )
 select cast(productoffer.ucpid as string) as epk_id,
-       cast(identificatation_inn as string) as inn,
-       cast(identification_ogrn as string) as ogrn,
+       cast(identificatation_inn.documentnumber as string) as inn,
+       cast(identification_ogrn.documentnumber as string) as ogrn,
        sbcccproduct.name,
        productoffer.creationtime,
        productoffer.dealid,
@@ -91,7 +91,7 @@ inner join prx_sbc.sbcccproduct as sbcccproduct
         'Пакет услуг (0000000301)',
         'Пакет услуг (0000000451)',
         'Пакет услуг (0000000452)',
-        'Пакет услуг (0000000453',
+        'Пакет услуг (0000000453)',
         'Пакет услуг (0000000467)',
         'Пакет услуг (0000000512)',
         'Пакет услуг (0000000518)',
@@ -105,7 +105,7 @@ inner join prx_sbc.sbcccproduct as sbcccproduct
         'Пакет услуг (0000000769)',
         'Пакет услуг (0000000800)',
         'Пакет услуг (0000000999)',
-        'Пакет услуг (0000001999',
+        'Пакет услуг (0000001999)',
         'Пакет услуг (0000011119)',
         'Пакет услуг (9000000001)'
     )
