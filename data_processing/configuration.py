@@ -97,29 +97,12 @@ def getTables(database: str) -> list:
     return list_of_tables_name
 
 
-def getCounter(database: str) -> str:
-    """
-    Подсчёт кол-ва записей каждой таблицы определённой БД.
-    """
-    getDatabases(database)
-    database_composition: list = getTables(database)
-    for table in database_composition:
-        globals()[table[0]] = table[0].split(sep='_')
-        counter: any = spark.sql(
-            f"""
-            select (*) as {globals()[table[0]][-1]} 
-            from {database}.{table}
-            """
-        ).collect()
-        print(counter)
-
-
 def getPath(database: str, table: str) -> list:
     """
     Найти путь до директории с файлами таблиц.
     Получить список путей до всех parquet-файлов нужной таблицы в HDFS.
     """
-    path_to_database: any = (
+    path_to_database: str = (
         spark.sql(f"describe formatted {database}.{table}")
         .filter(F.col('col_name') == 'Location')
         .select('data_type').collect()[0]
@@ -144,6 +127,53 @@ def getExcel(writer: object, table: str, dataframe: DataFrame) -> None:
                index=False, encoding='utf-8')
 
 
+def getSample(database: str) -> None:
+    """
+    Выгружаем по 100 строк из каждой таблицы БД
+    и записываем в excel-файл для анализа.
+
+    Избежание ошибок и длительной обработки:
+
+    --- Проверяем наличие БД в списке доступных
+    --- Для быстрого доступа читаем один parquet-файл вместо всей таблицы
+    --- Избегаем конфликта меток timestamp между PySpark и Pandas/NumPy
+        через присвоение всем столбцам фрейма данных типа - string
+    --- Устанавливаем константу длины наименования листа Excel для
+        выполнения условия: длина <= 31
+    """
+    with pd.ExcelWriter(f"{database}.xlsx", engine='xlsxwriter') as writer:
+        for table in getTables(database):
+            path: list[bytes] = getPath(database, table)
+            index_file: int = index_path: int = -1
+            parquet_file: any = path[index_file].decode()
+            path_string: str = parquet_file.split(sep=' ')[index_path]
+            dataframe: DataFrame = spark.read.parquet(path_string)
+            string_columns: list = ([F.col(column).cast(T.StringType())
+                                     for column in dataframe.columns])
+            number_of_rows: int = 100 # При желании можно увеличить кол-во
+                                      # записей для сэмпла данных
+            changed_dataframe: DataFrame = (
+                dataframe.select(*string_columns).limit(number_of_rows)
+            )
+            table_entry: None = getExcel(writer, table, changed_dataframe)
+
+
+def countRecords(database: str) -> str:
+    """
+    Подсчёт кол-ва записей каждой таблицы определённой БД.
+    """
+    database_composition: list = getTables(database)
+    for table in database_composition:
+        globals()[table[0]] = table[0].split(sep='_')
+        counter: any = spark.sql(
+            f"""
+            select (*) as {globals()[table[0]][-1]} 
+            from {database}.{table}
+            """
+        ).collect()
+        print(counter)
+
+
 def createSchema(schema_dict: dict, dataframe: DataFrame) -> DataFrame:
     """
     Определяем новую схему для DataFrame.
@@ -159,47 +189,6 @@ def createSchema(schema_dict: dict, dataframe: DataFrame) -> DataFrame:
         T.StructType(schema_with_metadata)
     )
     return new_dataframe
-
-
-def getLimited(database: str) -> None:
-    """
-    Выгружаем по 100 строк из каждой таблицы БД
-    и записываем в excel-файл для анализа.
-
-    Шаги:
-
-    - Проверяем наличие БД из списка в Hive
-    - Создаём экземпляр записи в Excel
-    - Находим путь до БД в HDFS
-    - По этому пути забираем последний parquet-файл конкретной таблицы из БД
-    - Формируем DataFrame на основе чтения parquet-файла
-    - Формируем новый DataFrame со столбцами типа string
-    - Записываем по 100 строк на каждый лист в excel-файл
-
-    Избежание ошибок и длительной обработки:
-
-    --- Проверяем наличие БД в списке доступных
-    --- Для быстрого доступа читаем один parquet-файл вместо всей таблицы
-    --- Избегаем конфликта меток timestamp между PySpark и Pandas/NumPy
-        через присвоение всем столбцам фрейма типа данных - string
-    --- Устанавливаем константу длины наименования листа Excel для
-        выполнения условия: длина <= 31
-    """
-    getDatabases(database)
-    with pd.ExcelWriter(f"{database}.xlsx", engine='xlsxwriter') as writer:
-        for table in getTables(database):
-            path: list[bytes] = getPath(database, table)
-            index_file: int = index_path: int = -1
-            parquet_file: any = path[index_file].decode()
-            path_string: str = parquet_file.split(sep=' ')[index_path]
-            dataframe: DataFrame = spark.read.parquet(path_string)
-            string_columns: list = ([F.col(column).cast(T.StringType())
-                                     for column in dataframe.columns])
-            number_of_rows: int = 100
-            changed_dataframe: DataFrame = (
-                dataframe.select(*string_columns).limit(number_of_rows)
-            )
-            table_entry: None = getExcel(writer, table, changed_dataframe)
 
 
 if __name__ == '__main__':
