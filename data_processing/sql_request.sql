@@ -144,4 +144,5 @@ where (
        and '2024-12-31 59:59:60.999999'
 )
 and productoffer.productofferdescription like '%Предложить%'
+or productoffer.productofferdescription like '%У клиента%'
 order by sbcccproduct.name, productoffer.creationtime desc;
