@@ -117,8 +117,11 @@ left join prx_deals.dealentity as dealentity
     on dealentity.dealid = productoffer.dealid
 inner join prx_parallelrun.organization as organization
     on organization.id = productoffer.ucpid
-    and (organization.startdate >= '2024-01-01 00:00:00.000000'
-         and organization.startdate <= '2024-12-31 59:59:60.999999')
+    and (
+         organization.startdate
+         between '2024-01-01 00:00:00.000000'
+         and '2024-12-31 59:59:60.999999'
+    )
 inner join identificatation_inn
     on substring(identificatation_inn.key, 1, 32) = organization.key
 inner join identification_ogrn
@@ -135,7 +138,10 @@ left join prx_dds.sbrf_channel as task_channel
     on taskentity.taskchannelcode = task_channel.code
 left join prx_dds.task_result as task_result
     on taskentity.taskresult = task_result.code
-where (productoffer.creationtime
+where (
+       productoffer.creationtime
        between '2024-01-01 00:00:00.000000'
-       and '2024-12-31 59:59:60.999999')
+       and '2024-12-31 59:59:60.999999'
+)
+and productoffer.productofferdescription like '%Предложить%'
 order by sbcccproduct.name, productoffer.creationtime desc;
