@@ -143,6 +143,8 @@ where (
        between '2024-01-01 00:00:00.000000'
        and '2024-12-31 59:59:60.999999'
 )
-and productoffer.productofferdescription like '%Предложить%'
-or productoffer.productofferdescription like '%У клиента%'
+and (
+     productoffer.productofferdescription like '%Предложить%'
+     or productoffer.productofferdescription like '%У клиента%'
+)
 order by sbcccproduct.name, productoffer.creationtime desc;
