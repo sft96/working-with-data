@@ -8,10 +8,10 @@ identification_ogrn as (
                row_number() over (
                    partition by temp.documentnumber
                    order by startdate desc
-               ) as rn
+               ) as row_number
         from prx_parallelrun.identification_ogrn as temp
     )
-    where rn = 1
+    where row_number = 1
 ),
 identificatation_inn as (
     select documentnumber,
@@ -22,10 +22,10 @@ identificatation_inn as (
                row_number() over (
                    partition by temp.documentnumber
                    order by startdate desc
-               ) as rn
+               ) as row_number
         from prx_parallelrun.identificatation_inn as temp
     )
-    where rn = 1
+    where row_number = 1
 )
 select cast(productoffer.ucpid as string) as epk_id,
        cast(identificatation_inn.documentnumber as string) as inn,
