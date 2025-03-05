@@ -3,13 +3,13 @@ identification_ogrn as (
     select documentnumber, 
            key
     from (
-        select temp.documentnumber,
-               temp.key,
+        select interim.documentnumber,
+               interim.key,
                row_number() over (
-                   partition by temp.documentnumber
+                   partition by interim.documentnumber
                    order by startdate desc
                ) as row_number
-        from prx_parallelrun.identification_ogrn as temp
+        from prx_parallelrun.identification_ogrn as interim
     )
     where row_number = 1
 ),
@@ -17,13 +17,13 @@ identificatation_inn as (
     select documentnumber,
            key
     from (
-        select temp.documentnumber,
-               temp.key,
+        select interim.documentnumber,
+               interim.key,
                row_number() over (
-                   partition by temp.documentnumber
+                   partition by interim.documentnumber
                    order by startdate desc
                ) as row_number
-        from prx_parallelrun.identificatation_inn as temp
+        from prx_parallelrun.identificatation_inn as interim
     )
     where row_number = 1
 )
