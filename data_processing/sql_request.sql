@@ -105,6 +105,8 @@ inner join prx_sbc.sbcccproduct as sbcccproduct
         'Пакет услуг (0000000769)',
         'Пакет услуг (0000000800)',
         'Пакет услуг (0000000999)',
+        'Пакет услуг (0000001997)',
+        'Пакет услуг (0000001998)',
         'Пакет услуг (0000001999)'
     )
 left join prx_deals.offertaskrelationentity as offertaskrelationentity
