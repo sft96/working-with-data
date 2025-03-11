@@ -159,7 +159,7 @@ def getSample(database: str) -> None:
             table_entry: None = getExcel(writer, table, changed_dataframe)
 
 
-def countRecords(database: str) -> str:
+def countLines(database: str) -> str:
     """
     Подсчёт кол-ва записей каждой таблицы определённой БД.
     """
