@@ -114,13 +114,12 @@ def getPath(database: str, table: str) -> list:
     return list_of_paths
 
 
-def getExcel(writer: object, table: str, dataframe: DataFrame) -> None:
+def getExcel(writer, # type ContextManager
+             worksheet_name: str, dataframe: DataFrame) -> None:
     """
     Записать все результаты обработки данных в excel-файл.
     По каждой таблице на отдельный лист.
     """
-    path_of_the_name: list = table[0].split(sep='_')
-    worksheet_name: str = path_of_the_name[-1]
     sheet_length: int = 31
     dataframe.toPandas(
     ).to_excel(writer, sheet_name=f"{worksheet_name[sheet_length]}",
@@ -153,10 +152,12 @@ def getSample(database: str) -> None:
             string_columns: list = ([F.col(column).cast(T.StringType())
                                      for column in dataframe.columns])
             number_of_rows: int = 100 # Можно увеличить размер сэмпла
-            changed_dataframe: DataFrame = (
+            changed_df: DataFrame = (
                 dataframe.select(*string_columns).limit(number_of_rows)
-            )
-            table_entry: None = getExcel(writer, table, changed_dataframe)
+            ).toPandas()
+            path_of_the_name: list = table[0].split(sep='_')
+            sheet_name: str = path_of_the_name[-1]
+            table_entry: None = getExcel(writer, sheet_name, changed_df)
 
 
 def countLines(database: str) -> str:
