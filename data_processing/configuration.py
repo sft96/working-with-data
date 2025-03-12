@@ -121,9 +121,8 @@ def getExcel(writer, # type ContextManager
     По каждой таблице на отдельный лист.
     """
     sheet_length: int = 31
-    dataframe.toPandas(
-    ).to_excel(writer, sheet_name=f"{worksheet_name[sheet_length]}",
-               index=False, encoding='utf-8')
+    dataframe.to_excel(writer, sheet_name=f"{worksheet_name[sheet_length]}",
+                       index=False, encoding='utf-8')
 
 
 def getSample(database: str) -> None:
