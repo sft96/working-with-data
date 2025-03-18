@@ -37,10 +37,11 @@ from pyspark.sql import SparkSession, DataFrame
 from pyspark.sql.window import Window
 import pyspark.sql.functions as F
 import pyspark.sql.types as T
+
+import re
 import numpy as np
 import pandas as pd
 import datetime as dt
-import re
 
 _conf = (
     SparkConf()
@@ -64,19 +65,16 @@ _conf = (
     .set('spark.dynamicAllocation.maxExecutors', '12')
 )
 
-spark = (
-    SparkSession
-    .builder
-    .enableHiveSupport()
-    .config(conf=_conf)
-    .getOrCreate()
-)
+spark = lambda: SparkSession.builder.config(conf=_conf).getOrCreate()
 
 
 def getDatabases(database: str) -> list:
     """
     Получить список доступных БД из Hive.
     Проверить наличие переданного наименования БД в списке всех БД.
+    listDatabases() возвращает не только наименования, но ещё
+    и дополнительную информацию (описания, ссылки), поэтому
+    забираем только названия через цикл.
     """
     information_of_databases: list = spark.catalog.listDataBases()
     list_of_databases_name: list = []
@@ -90,10 +88,14 @@ def getDatabases(database: str) -> list:
 
 def getTables(database: str) -> list:
     """
-    Получить список таблиц по названию БД.
+    Получить список таблиц по названию БД, проверив перед этим корректность
+    наименования БД через наличие/отсутствие её в списке - getDatabases().
     """
     getDatabases(database)
-    list_of_tables_name: list = spark.catalog.listTables(database)
+    list_of_tables_name: list = []
+    information_of_tables: list = spark.catalog.listTables(database)
+    for table in information_of_tables:
+        list_of_tables_name.append(table[0])
     return list_of_tables_name
 
 
@@ -101,17 +103,27 @@ def getPath(database: str, table: str) -> list:
     """
     Найти путь до директории с файлами таблиц.
     Получить список путей до всех parquet-файлов нужной таблицы в HDFS.
+    В директории таблиц parquet-файлы организованы по-разному:
+    1) Если кол-во файлов больше >= 3, то забираем предпоследний файл,
+    так как в последнем может быть не достаточно данных для анализа.
+    2) Если кол-во файлов меньше, то в первую очередь забираем второй,
+    так как первый может быть схемой, а не набором данных.
+    3) Во вторую очередь забираем первый/единственный файл.
     """
-    path_to_database: str = (
-        spark.sql(f"describe formatted {database}.{table}")
+    path_to_tables: any = (
+        spark.sql(f"describe formatted {database}.{table};")
         .filter(F.col('col_name') == 'Location')
         .select('data_type').collect()[0]
     )
-    list_of_paths: list[bytes] = subprocess.run(
-        ['hdfs', 'dfs', '-ls',
-         f"{path_to_database[0]}"],
-         stdout=subprocess.PIPE).stdout.splitlines()
-    return list_of_paths
+    path: list[bytes] = subprocess.run(
+        ['hdfs', 'dfs', '-ls', f"{path_to_tables[0]}"],
+        stdout=subprocess.PIPE
+    ).stdout.splitlines()
+    index: int = -2 if len(path) >= 3 else 2 if len(path) >= 3 else 1
+    parquet: str = path[index].decode()
+    parquet_index: int = -1
+    path_string: str = (parquet.split(sep=' '))[parquet_index]
+    return path_string
 
 
 def getExcel(writer, # type ContextManager
@@ -119,77 +131,89 @@ def getExcel(writer, # type ContextManager
     """
     Записать все результаты обработки данных в excel-файл.
     По каждой таблице на отдельный лист.
+    Шаблон применения функции будет выглядеть как-то так:
+    >>> with pd.ExcelWriter('имя_файла', 'движок') as writer:
+    >>>     for 'таблица' in 'список_таблиц':
+    >>>         getExcel(аргументы)
     """
-    sheet_length: int = 31
+    sheet_length: int = 31 # длина имени листа не более 31
     dataframe.to_excel(writer, sheet_name=f"{worksheet_name[sheet_length]}",
                        index=False, encoding='utf-8')
 
 
 def getSample(database: str) -> None:
     """
-    Выгружаем по 100 строк из каждой таблицы БД
-    и записываем в excel-файл для анализа.
-
-    Избежание ошибок и длительной обработки:
-
-    --- Проверяем наличие БД в списке доступных
-    --- Для быстрого доступа читаем один parquet-файл вместо всей таблицы
-        Часто в больших таблицах в самом начале много строк с NULL,
-        поэтому берём самый последний файл
-    --- Избегаем конфликта меток timestamp между PySpark и Pandas/NumPy
-        через присвоение всем столбцам фрейма данных типа - string
-    --- Устанавливаем константу длины наименования листа Excel для
-        выполнения условия: длина <= 31
+    С помощью контекстного менеджера открываем запись в excel-файл.
+    Используем пользовательские функции getDatabases(), getTables(),
+    getPath(), getExcel() для проверки наличия базы данных,
+    получения списка таблиц, поиска parquet-файлов и записи результатов.
+    В текущей функции производим обработку данных в контексте
+    изменения типа столбцов с timestamp на string для избежания
+    конфликта между PySpark и Pandas/NumPy.
     """
     with pd.ExcelWriter(f"{database}.xlsx", engine='xlsxwriter') as writer:
         for table in getTables(database):
-            path: list[bytes] = getPath(database, table)
-            index_file: int = index_path: int = -1
-            parquet_file: any = path[index_file].decode()
-            path_string: str = parquet_file.split(sep=' ')[index_path]
-            dataframe: DataFrame = spark.read.parquet(path_string)
+            dataframe: DataFrame = spark.read.parquet(
+                getPath(database, table)
+            )
             string_columns: list = ([F.col(column).cast(T.StringType())
                                      for column in dataframe.columns])
             number_of_rows: int = 100 # Можно увеличить размер сэмпла
-            changed_df: DataFrame = (
+            changed_df: pd.DataFrame = (
                 dataframe.select(*string_columns).limit(number_of_rows)
             ).toPandas()
-            path_of_the_name: list = table[0].split(sep='_')
+            path_of_the_name: list = table.split(sep='_')
             sheet_name: str = path_of_the_name[-1]
-            table_entry: None = getExcel(writer, sheet_name, changed_df)
+            getExcel(writer, sheet_name, changed_df)
 
 
 def countLines(database: str) -> str:
     """
     Подсчёт кол-ва записей каждой таблицы определённой БД.
+    Поиск в объекте вычисления числового значения с помощью
+    регулярного выражения, перевод из строковых значений
+    в целочисленный тип внутри генератора и запись в Pandas Series.
     """
     database_composition: list = getTables(database)
+    couples: dict = {}
     for table in database_composition:
-        globals()[table[0]] = table[0].split(sep='_')
         counter: any = spark.sql(
-            f"""
-            select (*) as {globals()[table[0]][-1]} 
-            from {database}.{table}
-            """
+            f"select (*) as {table} from {database}.{table};"
         ).collect()
-        print(counter)
+        pattern: any = r'(\d+)'
+        amount_search: any = re.findall(pattern, str(counter))
+        [couples.update({table: int(count)}) for count in amount_search]
+    series: pd.Series = pd.Series(data=couples.values(), index=couples.keys())
+    print(series)
 
 
 def createSchema(schema_dict: dict, dataframe: DataFrame) -> DataFrame:
     """
-    Определяем новую схему для DataFrame.
-    Дополняет метаданные (комментариями) к таблице в Hive.
+    Переопределяем схему для PySpark DataFrame с помощью работы через RDD.
+    Дополняет метаданные (комментариями) при чтении/просмотре таблицы в Hive.
+    Можно дополнить изменениями на разные типы данных внутри цикла.
     """
     schema_with_metadata: list = []
     for name, comment in schema_dict.items():
-        point: any = T.StructField(f"{name}", T.StringType(), True,
-                              {'comment': f'{comment}'})
+        point: any = T.StructField(
+            f"{name}", T.StringType(), True, {'comment': f'{comment}'}
+        )
         schema_with_metadata.append(point)
     new_dataframe: DataFrame = spark.createDataFrame(
-        dataframe.rdd,
-        T.StructType(schema_with_metadata)
+        dataframe.rdd, T.StructType(schema_with_metadata)
     )
     return new_dataframe
+
+
+def getFunctions() -> any:
+    """
+    Посмотреть все имена и описания пользовательских функций.
+    """
+    list_of_function: list = [
+        getDatabases, getTables, getPath, getExcel, getSample,
+        countLines, createSchema
+    ]
+    return [help(my_function) for my_function in list_of_function]
 
 
 if __name__ == '__main__':
