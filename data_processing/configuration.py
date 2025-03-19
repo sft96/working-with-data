@@ -65,7 +65,12 @@ _conf = (
     .set('spark.dynamicAllocation.maxExecutors', '12')
 )
 
-spark = lambda: SparkSession.builder.config(conf=_conf).getOrCreate()
+spark = (
+    SparkSession
+    .builder
+    .config(conf=_conf)
+    .getOrCreate()
+)
 
 
 def getDatabases(database: str) -> list:
