@@ -192,7 +192,7 @@ def countLines(database: str) -> str:
     print(series)
 
 
-def createSchema(schema_dict: dict, dataframe: DataFrame) -> DataFrame:
+def updateSchema(schema_dict: dict, dataframe: DataFrame) -> DataFrame:
     """
     Переопределяем схему для PySpark DataFrame с помощью работы через RDD.
     Дополняет метаданные (комментариями) при чтении/просмотре таблицы в Hive.
