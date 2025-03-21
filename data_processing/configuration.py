@@ -128,14 +128,14 @@ class Analitics:
         path: list[bytes] = subprocess.run(
             ['hdfs', 'dfs', '-ls', f"{path_to_tables[0]}"],
             stdout=subprocess.PIPE).stdout.splitlines()
-        if path != []:
+        if path == []:
+            return path
+        else:
             index: int = -2 if len(path) >= 3 else -1
             parquet: str = path[index].decode()
             parquet_index: int = -1
             path_string: str = (parquet.split(sep=' '))[parquet_index]
             return path_string
-        else:
-            return path
 
 
     def getExcel(writer, # type ContextManager
