@@ -66,12 +66,7 @@ _conf = (
     .set('spark.dynamicAllocation.maxExecutors', '12')
 )
 
-spark = (
-    SparkSession
-    .builder
-    .config(conf=_conf)
-    .getOrCreate()
-)
+spark = SparkSession.builder.config(conf=_conf).getOrCreate()
 
 
 class Analitics:
