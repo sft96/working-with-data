@@ -247,11 +247,11 @@ class Analitics:
         """
         Посмотреть все имена и описания пользовательских функций.
         """
-        list_of_function: list = [Analitics.getDatabases, Analitics.getTables,
+        list_of_functions: list = [Analitics.getDatabases, Analitics.getTables,
                                   Analitics.getPath, Analitics.getExcel,
                                   Analitics.getSample, Analitics.getAmount,
                                   Analitics.getSchema, Analitics.getEntry]
-        return [help(my_function) for my_function in list_of_function]
+        return [help(my_function) for my_function in list_of_functions]
 
 
 if __name__ == '__main__':
