@@ -207,7 +207,7 @@ class Analitics:
             counter: any = spark.sql(
                 f"select (*) as {table} from {database}.{table};"
             ).collect()
-            pattern: any = r'(\d+)'
+            pattern: str = r'(\d+)'
             amount_search: any = re.findall(pattern, str(counter))
             [couples.update({table: int(count)}) for count in amount_search]
         series: pd.Series = pd.Series(
