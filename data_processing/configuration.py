@@ -170,7 +170,7 @@ class Analitics:
                     string_columns: list = (
                         [F.col(column).cast(T.StringType())
                          for column in dataframe.columns])
-                    number_of_rows: int = 100 # Можно увеличить размер сэмпла
+                    number_of_rows: int = 100 # можно увеличить размер сэмпла
                     changed_df: pd.DataFrame = (dataframe.select(
                         *string_columns).limit(number_of_rows)).toPandas()
                     path_of_the_name: list = table.split(sep='_')
