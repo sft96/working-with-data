@@ -194,7 +194,7 @@ class Analitics:
         return new_dataframe
 
 
-    def getAmount(database: str) -> str:
+    def getAmount(database: str) -> pd.Series:
         """
         Подсчёт кол-ва записей каждой таблицы определённой БД.
         Поиск в объекте вычисления числового значения с помощью
