@@ -212,7 +212,7 @@ class Analitics:
             [couples.update({table: int(count)}) for count in amount_search]
         series: pd.Series = pd.Series(
             data=couples.values(), index=couples.keys())
-        print(series)
+        return series
     
 
     def getEntry(database: str, target: str) -> str:
