@@ -14,5 +14,4 @@
 * Kerberos - 1.10.3-30
 * Solr - 8.8.1
 
-![Jupyter Notebook](https://img.shields.io/badge/jupyter-%23FA0F00.svg?style=for-the-badge&logo=jupyter&logoColor=white)
-![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
+![alt text](https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.linkedin.com%2Fpulse%2Fapache-spark-hadoops-ecosystem-valdas-gylys&psig=AOvVaw0Xg8ZI1sMCsEgsbS90ydZI&ust=1742814931234000&source=images&cd=vfe&opi=89978449&ved=0CBQQjRxqFwoTCLCpxNmJoIwDFQAAAAAdAAAAABAE)
