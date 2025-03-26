@@ -73,6 +73,7 @@ class Analitics:
     """
     Класс самописных вспомогательных функций для быстрой аналитики.
     """
+    @staticmethod
     def getDatabases() -> list:
         """
         Получить список доступных БД из Hive.
@@ -86,8 +87,9 @@ class Analitics:
         for database_name, description, link in information_of_databases:
             list_of_databases_name.append(database_name)
         return list_of_databases_name
-    
 
+
+    @staticmethod
     def getTables(database: str) -> list:
         """
         Получить список таблиц по названию БД, 
@@ -105,6 +107,7 @@ class Analitics:
             return list_of_tables_name
 
 
+    @staticmethod
     def getPath(database: str, table: str) -> list:
         """
         Найти путь до директории с файлами таблиц.
@@ -133,6 +136,7 @@ class Analitics:
             return path_string
 
 
+    @staticmethod
     def getExcel(writer, # type ContextManager
                  worksheet_name: str, dataframe: DataFrame) -> None:
         """
@@ -149,6 +153,7 @@ class Analitics:
                            index=False, encoding='utf-8')
 
 
+    @staticmethod
     def getSample(database: str) -> None:
         """
         С помощью контекстного менеджера открываем запись в excel-файл.
@@ -178,6 +183,7 @@ class Analitics:
                     Analitics.getExcel(writer, sheet_name, changed_df)
     
 
+    @staticmethod
     def getSchema(schema_dict: dict, dataframe: DataFrame) -> DataFrame:
         """
         Переопределяем схему для PySpark DataFrame с помощью работы через RDD.
@@ -194,6 +200,7 @@ class Analitics:
         return new_dataframe
 
 
+    @staticmethod
     def getAmount(database: str) -> pd.Series:
         """
         Подсчёт кол-ва записей каждой таблицы определённой БД.
@@ -215,6 +222,7 @@ class Analitics:
         return series
     
 
+    @staticmethod
     def getEntry(database: str, target: str) -> str:
         """
         Поиск необходимого значения во всех столбцах всех таблиц одной БД.
@@ -243,6 +251,7 @@ class Analitics:
                         os.remove(file_name)
 
 
+    @staticmethod
     def getFunctions() -> list[any]:
         """
         Посмотреть все имена и описания пользовательских функций.
