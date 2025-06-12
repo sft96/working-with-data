@@ -152,4 +152,4 @@ and (
      productoffer.productofferdescription like '%Предложить%'
      or productoffer.productofferdescription like '%У клиента%'
 )
-order by sbcccproduct.name, productoffer.creationtime desc;
+order by productoffer.creationtime desc;
