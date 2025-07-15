@@ -132,10 +132,11 @@ class Analitics:
         так как первый может быть схемой, а не набором данных.
         3) Если таблица пустая, то возвращаем пустой список.
         """
-        path_to_tables: any = (spark.sql(
-            f"describe formatted {database}.{table};")
+        path_to_tables: any = (
+            spark.sql(f"describe formatted {database}.{table};")
             .filter(F.col('col_name') == 'Location')
-            .select('data_type').collect()[0])
+            .select('data_type').collect()[0]
+        )
         path: list[bytes] = subprocess.run(
             ['hdfs', 'dfs', '-ls', f"{path_to_tables[0]}"],
             stdout=subprocess.PIPE).stdout.splitlines()
@@ -161,7 +162,7 @@ class Analitics:
                 getExcel(аргументы)
         """
         sheet_length: int = 31 # длина имени листа не более 31
-        dataframe.to_excel(writer, 
+        dataframe.to_excel(writer,
                            sheet_name=f"{worksheet_name[sheet_length]}",
                            index=False, encoding='utf-8')
 
@@ -187,10 +188,14 @@ class Analitics:
                     dataframe: DataFrame = spark.read.parquet(path)
                     string_columns: list = (
                         [F.col(column).cast(T.StringType())
-                         for column in dataframe.columns])
+                         for column in dataframe.columns]
+                    )
                     number_of_rows: int = 100 # можно увеличить размер сэмпла
-                    changed_df: pd.DataFrame = (dataframe.select(
-                        *string_columns).limit(number_of_rows)).toPandas()
+                    changed_df: pd.DataFrame = (
+                        dataframe
+                        .select(*string_columns)
+                        .limit(number_of_rows)
+                    ).toPandas()
                     path_of_the_name: list = table.split(sep='_')
                     sheet_name: str = path_of_the_name[-1]
                     Analitics.getExcel(writer, sheet_name, changed_df)
@@ -224,14 +229,15 @@ class Analitics:
         database_composition: list = Analitics.getTables(database)
         couples: dict = {}
         for table in database_composition:
-            counter: any = spark.sql(
-                f"select (*) as {table} from {database}.{table};"
+            counter: any = (
+                spark.sql(f"select (*) as {table} from {database}.{table};"
             ).collect()
             pattern: str = r'(\d+)'
             amount_search: any = re.findall(pattern, str(counter))
             [couples.update({table: int(count)}) for count in amount_search]
         series: pd.Series = pd.Series(
-            data=couples.values(), index=couples.keys())
+            data=couples.values(), index=couples.keys()
+        )
         return series
     
 
@@ -249,8 +255,11 @@ class Analitics:
                 pass
             else:
                 max_lines: int = 100000 # лимит зависит от размера таблиц
-                pandas_df: pd.DataFrame = spark.read.parquet(
-                    path).limit(max_lines).toPandas()
+                pandas_df: pd.DataFrame = (
+                    spark.read.parquet(path)
+                    .limit(max_lines)
+                    .toPandas()
+                )
                 file_name: str = f"{table}.csv"
                 pandas_df.to_csv(file_name)
                 with open(file_name, 'rt') as file:
