@@ -74,6 +74,19 @@ class Analitics:
     Класс самописных вспомогательных функций для быстрой аналитики.
     """
     @staticmethod
+    def showPrx() -> DataFrame:
+        """
+        Получить все наименования подписок.
+        """
+        dataframe: DataFrame = (
+            spark.sql('databases show')
+            .filter(F.col('namespace').like('prx%'))
+            .show()
+        )
+        return dataframe
+
+    
+    @staticmethod
     def getDatabases() -> list:
         """
         Получить список доступных БД из Hive.
@@ -256,10 +269,11 @@ class Analitics:
         """
         Посмотреть все имена и описания пользовательских функций.
         """
-        list_of_functions: list = [Analitics.getDatabases, Analitics.getTables,
-                                  Analitics.getPath, Analitics.getExcel,
-                                  Analitics.getSample, Analitics.getAmount,
-                                  Analitics.getSchema, Analitics.getEntry]
+        list_of_functions: list = [Analitics.showPrx, Analitics.getDatabases,
+                                   Analitics.getTables, Analitics.getPath,
+                                   Analitics.getExcel, Analitics.getSample,
+                                   Analitics.getAmount, Analitics.getSchema,
+                                   Analitics.getEntry]
         return [help(my_function) for my_function in list_of_functions]
 
 
