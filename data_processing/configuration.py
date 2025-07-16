@@ -79,7 +79,7 @@ class Analitics:
         Получить все наименования подписок.
         """
         dataframe: DataFrame = (
-            spark.sql('databases show')
+            spark.sql('show databases')
             .filter(F.col('namespace').like('prx%'))
             .show()
         )
