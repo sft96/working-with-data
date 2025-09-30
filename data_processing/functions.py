@@ -33,7 +33,7 @@ class Data:
         pass
 
 
-class Subcriptions(Data):
+class Subscriptions(Data):
 
     '''
     Класс для просмотра основной информации
