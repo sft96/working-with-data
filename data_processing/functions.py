@@ -94,8 +94,8 @@ class Parquet(Data):
 
         Ускорение обращения к набору данных за счёт чтения одного файла,
         вместо всей таблицы:
-        -> spark.table('database.table')
-        -> spark.read.parquet('file_name')
+        -> spark.table('database.table') [-]
+        -> spark.read.parquet('file_name') [+]
 
         Полезно, если нужно быстро проанализировать данные
         или собрать прототип витрины.
