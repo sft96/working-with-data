@@ -6,7 +6,6 @@ import subprocess
 from configuration import spark
 from pyspark.sql import DataFrame
 import pyspark.sql.functions as F
-import pandas as pd
 
 
 class Data:
