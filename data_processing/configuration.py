@@ -17,6 +17,7 @@ from pyspark.sql import SparkSession
 _conf = (
     SparkConf()
     .setAppName('data')
+    .master('yarn')
     .set('spark.port.maxRetries', '150')
     .set('spark.executor.cores', '2')
     .set('spark.executor.memory', '6g')
