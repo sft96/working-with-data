@@ -17,7 +17,7 @@ class Data:
 
     _first: int = 0
     _last: int = -1
-    for_console: int = 999
+    for_console: int = 9999
 
     @staticmethod
     def writeExcel():
